@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { supabase } from '../supabase'
 import { fetchMonthRecords, findCycleStartAndLength, saveDayRecord } from '../lib/records'
 import { getFlowLevel } from '../lib/flowColors'
@@ -7,14 +7,13 @@ import './Calendar.css'
 
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일']
 
-export default function Calendar() {
+const Calendar = forwardRef(function Calendar(_props, ref) {
   const today = new Date()
   const [summary, setSummary] = useState(null)
   const [currentYear, setCurrentYear] = useState(today.getFullYear())
   const [currentMonth, setCurrentMonth] = useState(today.getMonth()) // 0-indexed
   const [records, setRecords] = useState({}) // { 'YYYY-MM-DD': { level, tags } }
   const [selectedDate, setSelectedDate] = useState(null)
-  const [loading, setLoading] = useState(true)
 
   const monthStart = new Date(currentYear, currentMonth, 1)
   const monthEnd = new Date(currentYear, currentMonth + 1, 0)
@@ -33,7 +32,6 @@ export default function Calendar() {
   }, [currentYear, currentMonth])
 
   async function fetchRecords() {
-    setLoading(true)
     try {
       const from = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`
       const to = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(totalDays).padStart(2, '0')}`
@@ -45,8 +43,6 @@ export default function Calendar() {
       setSummary(buildSummary(info))
     } catch {
       // Supabase 연결 실패 시 무시
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -79,6 +75,16 @@ export default function Calendar() {
       setCurrentMonth(m => m + 1)
     }
   }
+
+  function handleGoToday() {
+    const now = new Date()
+    setCurrentYear(now.getFullYear())
+    setCurrentMonth(now.getMonth())
+  }
+
+  useImperativeHandle(ref, () => ({
+    goToday: handleGoToday,
+  }))
 
   async function handleSave(day, level, tags) {
     const dateStr = formatDate(day)
@@ -119,16 +125,17 @@ export default function Calendar() {
 
       <SummaryCards summary={summary} />
 
-      <div className="weekday-row">
-        {WEEKDAYS.map(d => (
-          <div key={d} className={`weekday-cell ${d === '토' ? 'sat' : ''} ${d === '일' ? 'sun' : ''}`}>
-            {d}
-          </div>
-        ))}
-      </div>
+      <div className="calendar-body">
+        <div className="weekday-row">
+          {WEEKDAYS.map(d => (
+            <div key={d} className={`weekday-cell ${d === '토' ? 'sat' : ''} ${d === '일' ? 'sun' : ''}`}>
+              {d}
+            </div>
+          ))}
+        </div>
 
-      <div className="day-grid">
-        {cells.map((day, idx) => {
+        <div className="day-grid">
+          {cells.map((day, idx) => {
           if (!day) return <div key={`empty-${idx}`} className="day-cell empty" />
 
           const dateStr = formatDate(day)
@@ -173,10 +180,9 @@ export default function Calendar() {
               )}
             </div>
           )
-        })}
+          })}
+        </div>
       </div>
-
-      {loading && <div className="loading-bar" aria-hidden="true" />}
 
       {selectedDate && (
         <DayModal
@@ -190,7 +196,9 @@ export default function Calendar() {
       )}
     </div>
   )
-}
+})
+
+export default Calendar
 
 function Droplet({ flow, level }) {
   return (

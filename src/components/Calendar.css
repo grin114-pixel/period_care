@@ -2,13 +2,17 @@
 .calendar-wrap {
   width: 100%;
   max-width: 430px;
+  height: 100%;
+  max-height: 100dvh;
+  max-height: 100svh;
   margin: 0 auto;
-  padding: 16px 8px 32px;
+  padding: 12px 6px max(8px, env(safe-area-inset-bottom));
   font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
   background: #fff0f3;
-  min-height: 100dvh;
-  overflow-x: hidden;
+  overflow: hidden;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── 헤더 ── */
@@ -16,34 +20,46 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 4px 16px;
+  padding: 4px 2px 8px;
+  flex-shrink: 0;
+  font-family: 'Gowun Dodum', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
 }
 .cal-title {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #c1173a;
+  color: var(--header-ink);
   letter-spacing: -0.5px;
+  margin: 0;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  text-align: center;
+  min-width: 0;
 }
 .nav-btn {
   background: none;
   border: none;
-  font-size: 1.8rem;
-  color: #e63956;
+  font-size: 1.6rem;
+  color: var(--header-ink-muted);
   cursor: pointer;
-  padding: 4px 12px;
+  padding: 4px 8px;
   border-radius: 50%;
   transition: background 0.15s;
+  flex-shrink: 0;
 }
-.nav-btn:hover { background: #ffe0e8; }
+.nav-btn:hover { background: rgba(255, 255, 255, 0.75); }
 
 /* ── 상단 요약 카드 ── */
 .summary-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
-  padding: 0 4px 10px;
+  padding: 0 2px 8px;
   width: 100%;
   min-width: 0;
+  flex-shrink: 0;
 }
 
 .summary-card {
@@ -130,13 +146,24 @@
   text-align: center;
 }
 
+/* ── 달력 본문(요일+날짜) ── */
+.calendar-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+}
+
 /* ── 요일 행 ── */
 .weekday-row {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   width: 100%;
   min-width: 0;
+  flex-shrink: 0;
 }
 .weekday-cell {
   text-align: center;
@@ -150,28 +177,34 @@
 
 /* ── 날짜 그리드 ── */
 .day-grid {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 3px;
+  grid-auto-rows: 1fr;
+  gap: 2px;
   width: 100%;
   min-width: 0;
+  overflow: hidden;
 }
 
 .day-cell {
-  aspect-ratio: 1 / 1.1;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  padding: 5px 0 4px;
-  border-radius: 12px;
+  padding: 2px 0 1px;
+  border-radius: 8px;
   cursor: pointer;
   position: relative;
   transition: background 0.15s;
   background: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
   overflow: hidden;
+  box-sizing: border-box;
 }
 @media (hover: hover) {
   .day-cell:hover:not(.empty) {
@@ -184,21 +217,20 @@
   cursor: default;
 }
 
-/* 오늘 표시(첨부 이미지 스타일) */
+/* 오늘 표시(첨부 이미지 스타일) — border 대신 inset shadow로 레이아웃 밀림 방지 */
 .day-cell.today:not(.ovulation-day) {
   background: #fff4f7;
-  border: 1.6px solid #ff6b8a;
-  box-shadow: 0 2px 10px rgba(230, 57, 86, 0.08);
+  box-shadow: inset 0 0 0 1.5px #ff6b8a, 0 1px 2px rgba(230, 57, 86, 0.08);
 }
 .day-cell.today:not(.ovulation-day) .day-num {
   color: #c1173a;
   font-weight: 800;
 }
 .today-text {
-  font-size: 0.58rem;
+  font-size: 0.5rem;
   font-weight: 700;
   color: #ff4d6d;
-  margin-top: 2px;
+  margin-top: 1px;
   line-height: 1;
   align-self: center;
 }
@@ -212,8 +244,8 @@
   background: #9b6fe8;
   color: #fff;
   border-radius: 50%;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,15 +267,16 @@
 .day-cell.sun .day-num { color: #ff7a90; }
 
 .day-num {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 500;
   color: #8a8a8a;
   line-height: 1;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 /* 날짜(좌상단) + 태그 점 */
@@ -252,8 +285,9 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  padding-left: 6px;
-  padding-top: 2px;
+  padding-left: 3px;
+  padding-top: 1px;
+  min-width: 0;
 }
 
 .day-top-row {
@@ -291,8 +325,8 @@
 }
 
 .droplet-wrap {
-  width: 22px;
-  height: 20px;
+  width: 16px;
+  height: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -301,23 +335,8 @@
 
 /* 기존 글자 배지(marker) 대신 점(tag-dot) 사용 */
 .droplet-svg {
-  width: 18px;
-  height: 20px;
-  drop-shadow: 0 1px 2px rgba(0,0,0,0.15);
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.12));
+  width: 14px;
+  height: 15px;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.1));
 }
 
-/* ── 로딩 바 ── */
-.loading-bar {
-  height: 2px;
-  background: linear-gradient(90deg, #ffd6e0, #ffb3c6, #ffd6e0);
-  background-size: 200% 100%;
-  animation: shimmer 1.2s infinite;
-  border-radius: 2px;
-  margin-top: 8px;
-  opacity: 0.6;
-}
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
